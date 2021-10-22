@@ -4,20 +4,20 @@ session_start() or die('A sessão não pode ser iniciada');
 if (!isset($_SESSION['id'])){
   header("Location: login.html");
 }
+$id = $_POST['id'];
 
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $conn = new mysqli("localhost", "devwav39_admin", "admin@123", "devwav39_plataformaCRHR");
 
 if (!$conn) {
   die("Connection failed: " . mysqli_connect_error());
 }
 
-$sql = "SELECT id, name FROM condominium";
+$sql = "UPDATE occurrences SET active=2 WHERE id={$id}";
 
-$result = $conn->query($sql);
-
-while ($row = $result->fetch_assoc()) {
-  echo '<option value="'.$row['id'].'">'.$row['name'].'</option>';
+if($conn->query($sql)){
+  header("Location: index.php");
+} else {
+  echo "Error: " . $sql . "<br>" . $conn->error;
 }
 
 mysqli_close($conn);

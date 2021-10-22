@@ -11,7 +11,7 @@ if (!$conn) {
   die("Connection failed: " . mysqli_connect_error());
 }
 
-$sql = "SELECT obs, date, if(status = 1, 'Pago', 'Não Pago') AS status, name FROM occurrences INNER JOIN condominium ON condominium.id = occurrences.id";
+$sql = "SELECT occurrences.id, obs, date, if(status = 1, 'Pago', 'Não Pago') AS status, name FROM occurrences INNER JOIN condominium ON condominium.id = occurrences.idCondominium WHERE active = 1;";
 
 $result = $conn->query($sql);
 
@@ -45,6 +45,7 @@ mysqli_close($conn);
 
   <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet">
 
+  <link rel="shortcut icon" href="./img/img48.jpg">
 </head>
 
 <body id="page-top">
@@ -108,7 +109,7 @@ mysqli_close($conn);
 
       <!-- Nav Item - Condomínios -->
       <li class="nav-item">
-        <a class="nav-link" href="condomino.php">
+        <a class="nav-link" href="#">
           <i class="fas fa-fw fa-table"></i>
           <span>Condôminos</span></a>
       </li>
@@ -321,7 +322,7 @@ mysqli_close($conn);
               </a>
               <!-- Dropdown - User Information -->
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="profile.php">
+                <a class="dropdown-item" href="#">
                   <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                   Perfil
                 </a>
@@ -356,6 +357,14 @@ mysqli_close($conn);
               <span>Adicionar ocorrência</span>
             </a>
           </div>
+          <a id="buttonEdit" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <span>Editar linha selecionada</span>
+          </a>
+          <a class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm" data-toggle="modal"
+            data-target="#deleteModal">
+            <span>Excluir linha selecionada</span>
+          </a>
+          <hr>
 
           <table id="occurrencesTable" class="display" style="width:100%">
             <thead>
@@ -366,31 +375,23 @@ mysqli_close($conn);
             </thead>
             <tbody>
               <?php if(!empty($arr_occurrences)) { ?>
-                <?php foreach($arr_occurrences as $occurrences) { ?>
-                  <tr>
-                    <td><?php echo $occurrences['name']; ?></td>
-                    <td><?php echo $occurrences['obs']; ?></td>
-                    <td><?php echo $occurrences['status']; ?></td>
-                    <td><?php echo $occurrences['date']; ?></td>
-                  </tr>
-                <?php } ?>
+              <?php foreach($arr_occurrences as $occurrences) { ?>
+              <tr Id=<?php echo $occurrences['id']; ?>>
+                <td><?php echo $occurrences['name']; ?></td>
+                <td><?php echo $occurrences['obs']; ?></td>
+                <td><?php echo $occurrences['status']; ?></td>
+                <td><?php echo $occurrences['date']; ?></td>
+              </tr>
+              <?php } ?>
               <?php } ?>
             </tbody>
-            <tfoot>
-              <tr>
-                  <th>Nome</th>
-                  <th>Obs</th>
-                  <th>Status</th>
-                  <th>Data</th>
-              </tr>
-            </tfoot>
           </table>
 
           <!-- Content Row -->
           <!--<div class="row">-->
 
-            <!-- Earnings (Monthly) Card Example -->
-            <!--<div class="col-xl-3 col-md-6 mb-4">
+          <!-- Earnings (Monthly) Card Example -->
+          <!--<div class="col-xl-3 col-md-6 mb-4">
               <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
@@ -407,8 +408,8 @@ mysqli_close($conn);
               </div>
             </div>-->
 
-            <!-- Earnings (Monthly) Card Example -->
-            <!--<div class="col-xl-3 col-md-6 mb-4">
+          <!-- Earnings (Monthly) Card Example -->
+          <!--<div class="col-xl-3 col-md-6 mb-4">
               <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
@@ -425,8 +426,8 @@ mysqli_close($conn);
               </div>
             </div>-->
 
-            <!-- Earnings (Monthly) Card Example -->
-            <!--<div class="col-xl-3 col-md-6 mb-4">
+          <!-- Earnings (Monthly) Card Example -->
+          <!--<div class="col-xl-3 col-md-6 mb-4">
               <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
@@ -453,8 +454,8 @@ mysqli_close($conn);
               </div>
             </div>-->
 
-            <!-- Pending Requests Card Example -->
-            <!--<div class="col-xl-3 col-md-6 mb-4">
+          <!-- Pending Requests Card Example -->
+          <!--<div class="col-xl-3 col-md-6 mb-4">
               <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
@@ -476,11 +477,11 @@ mysqli_close($conn);
 
           <!--<div class="row">-->
 
-            <!-- Area Chart -->
-            <!--<div class="col-xl-8 col-lg-7">
+          <!-- Area Chart -->
+          <!--<div class="col-xl-8 col-lg-7">
               <div class="card shadow mb-4">-->
-                <!-- Card Header - Dropdown -->
-                <!--<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <!-- Card Header - Dropdown -->
+          <!--<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                   <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
                   <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
@@ -497,8 +498,8 @@ mysqli_close($conn);
                     </div>
                   </div>
                 </div>-->
-                <!-- Card Body -->
-                <!--<div class="card-body">
+          <!-- Card Body -->
+          <!--<div class="card-body">
                   <div class="chart-area">
                     <canvas id="myAreaChart"></canvas>
                   </div>
@@ -506,11 +507,11 @@ mysqli_close($conn);
               </div>
             </div>-->
 
-            <!-- Pie Chart -->
-            <!--<div class="col-xl-4 col-lg-5">
+          <!-- Pie Chart -->
+          <!--<div class="col-xl-4 col-lg-5">
               <div class="card shadow mb-4">-->
-                <!-- Card Header - Dropdown -->
-                <!--<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <!-- Card Header - Dropdown -->
+          <!--<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                   <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
                   <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
@@ -527,8 +528,8 @@ mysqli_close($conn);
                     </div>
                   </div>
                 </div>-->
-                <!-- Card Body -->
-                <!--<div class="card-body">
+          <!-- Card Body -->
+          <!--<div class="card-body">
                   <div class="chart-pie pt-4 pb-2">
                     <canvas id="myPieChart"></canvas>
                   </div>
@@ -551,11 +552,11 @@ mysqli_close($conn);
           <!-- Content Row -->
           <!--<div class="row">-->
 
-            <!-- Content Column -->
-            <!--<div class="col-lg-6 mb-4">-->
+          <!-- Content Column -->
+          <!--<div class="col-lg-6 mb-4">-->
 
-              <!-- Project Card Example -->
-              <!--<div class="card shadow mb-4">
+          <!-- Project Card Example -->
+          <!--<div class="card shadow mb-4">
                 <div class="card-header py-3">
                   <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
                 </div>
@@ -588,8 +589,8 @@ mysqli_close($conn);
                 </div>
               </div>-->
 
-              <!-- Color System -->
-              <!--<div class="row">
+          <!-- Color System -->
+          <!--<div class="row">
                 <div class="col-lg-6 mb-4">
                   <div class="card bg-primary text-white shadow">
                     <div class="card-body">
@@ -660,8 +661,8 @@ mysqli_close($conn);
 
             <div class="col-lg-6 mb-4">-->
 
-              <!-- Illustrations -->
-              <!--<div class="card shadow mb-4">
+          <!-- Illustrations -->
+          <!--<div class="card shadow mb-4">
                 <div class="card-header py-3">
                   <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
                 </div>
@@ -679,8 +680,8 @@ mysqli_close($conn);
                 </div>
               </div>-->
 
-              <!-- Approach -->
-              <!--<div class="card shadow mb-4">
+          <!-- Approach -->
+          <!--<div class="card shadow mb-4">
                 <div class="card-header py-3">
                   <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
                 </div>
@@ -738,8 +739,28 @@ mysqli_close($conn);
         </div>
         <div class="modal-body">Selecione "Sair" se você estiver pronto para encerrar sua sessão atual</div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-          <a class="btn btn-primary" href="logout.php">Logout</a>
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+          <a class="btn btn-primary" href="logout.php">Sair</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal-->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Realmente deseja excluir a ocorrência?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">Selecione "excluir" se desejar</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+          <a class="btn btn-primary" id="buttonDelete">Excluir</a>
         </div>
       </div>
     </div>
@@ -756,11 +777,11 @@ mysqli_close($conn);
   <script src="./js/sb-admin-2.js"></script>
 
   <!-- Page level plugins -->
-  <script src="./vendor/chart.js/Chart.js"></script>
+  <!--<script src="./vendor/chart.js/Chart.js"></script>-->
 
   <!-- Page level custom scripts -->
-  <script src="./js/demo/chart-area-demo.js"></script>
-  <script src="./js/demo/chart-pie-demo.js"></script>
+  <!--<script src="./js/demo/chart-area-demo.js"></script>
+  <script src="./js/demo/chart-pie-demo.js"></script>-->
 
   <script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
 
@@ -771,14 +792,51 @@ mysqli_close($conn);
   <script src="//cdn.datatables.net/plug-ins/1.11.3/sorting/datetime-moment.js"></script>
 
   <script>
-    $(document).ready(function() {
-      $.fn.dataTable.moment('DD/MM/YYYY HH:mm');
-      $('#occurrencesTable').DataTable( {
-        "language": {
-          "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/pt_br.json"
+  $(document).ready(function() {
+    $.fn.dataTable.moment('DD/MM/YYYY HH:mm');
+
+    var table = $('#occurrencesTable').DataTable({
+      "language": {
+        "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/pt_br.json"
+      }
+    });
+
+    $('#occurrencesTable tbody').on('click', 'tr', function() {
+      if ($(this).hasClass('selected')) {
+        $(this).removeClass('selected');
+      } else {
+        table.$('tr.selected').removeClass('selected');
+        $(this).addClass('selected');
+      }
+    });
+
+    $('#buttonDelete').click(function() {
+      var id = table.$('tr.selected').attr("id");
+
+      $('#deleteModal').modal('hide');
+
+      $.ajax({
+        type: "POST",
+        url: "deleteOccurrence.php",
+        data: "id=" + id,
+        async: true,
+        success: function(data) {
+          table.row('.selected').remove().draw(false);
         }
       });
     });
+
+    $('#buttonEdit').click(function() {
+      var id = table.$('tr.selected').attr("id");
+      if(typeof id != "undefined"){
+        redirecionar("editOccurrence.php?id=" + id);
+      }
+    });
+
+    function redirecionar(rota) {
+      window.location.href = rota;
+    };
+  });
   </script>
 
 </body>

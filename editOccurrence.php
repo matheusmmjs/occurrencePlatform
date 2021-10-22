@@ -4,6 +4,28 @@ session_start() or die('A sessão não pode ser iniciada');
 if (!isset($_SESSION['id'])){
   header("Location: login.html");
 }
+
+$id = $_GET['id'];
+
+$conn = new mysqli("localhost", "devwav39_admin", "admin@123", "devwav39_plataformaCRHR");
+
+if (!$conn) {
+  die("Connection failed: " . mysqli_connect_error());
+}
+
+$sql = "SELECT occurrences.id, obs, date, status AS idStatus, if(status = 1, 'Pago', 'Não Pago') AS status, name, condominium.id AS idCondomino, value, hasInstallments, valueInstallments, qtdInstallments FROM occurrences INNER JOIN condominium ON condominium.id = occurrences.idCondominium WHERE occurrences.id = {$id} and active = 1;";
+
+$result = $conn->query($sql);
+
+$row = $result->fetch_assoc();
+
+if($row["date"] != ''){
+  $dateNew = \DateTime::createFromFormat("d/m/Y", $row["date"])->format("Y-m-d");
+}
+
+$result->free_result();
+
+$conn->close();
 ?>
 <html lang="pt-br">
 
@@ -15,7 +37,7 @@ if (!isset($_SESSION['id'])){
   <meta name="description" content="Platform CRHR">
   <meta name="author" content="Dev Waves">
 
-  <title>Plataforma CRHR - Dashboard</title>
+  <title>Plataforma CRHR - Editar ocorrência</title>
 
   <!-- Custom fonts for this template-->
   <link href="./vendor/fontawesome-free/css/all.css" rel="stylesheet">
@@ -136,7 +158,7 @@ if (!isset($_SESSION['id'])){
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Ocorrência</h1>
+            <h1 class="h3 mb-0 text-gray-800">Editar Ocorrência</h1>
           </div>
 
           <form class="form-subscribe needs-validation" action="addOccurrence.php" method="POST"
@@ -144,13 +166,13 @@ if (!isset($_SESSION['id'])){
             <div class="form-group row">
               <label for="date" class="col-sm-2 col-form-label">Data negociada</label>
               <div class="col-sm-6">
-                <input type="date" class="form-control" id="date" name="date">
+                <input type="date" class="form-control" id="date" name="date" value=<?php echo $dateNew;?>>
               </div>
             </div>
             <div class="form-group row">
               <label for="obs" class="col-sm-2 col-form-label">Observação</label>
               <div class="col-sm-6">
-                <input type="text" class="form-control" id="obs" name="obs" placeholder="Observação">
+                <input type="text" class="form-control" id="obs" name="obs" value=<?php echo $row['obs'];?>>
               </div>
             </div>
             <div class="form-group row">
@@ -158,7 +180,8 @@ if (!isset($_SESSION['id'])){
               <div class="col-sm-4">
                 <div class="input-group mb-3">
                   <span class="input-group-text">R$</span>
-                  <input type="text" class="form-control money" id="value" name="value" placeholder="1.800,00">
+                  <input type="text" class="form-control money" id="value" name="value"
+                    value=<?php echo $row['value'];?>>
                 </div>
               </div>
             </div>
@@ -166,7 +189,7 @@ if (!isset($_SESSION['id'])){
               <label for="condomino" class="col-sm-2 col-form-label">Condômino</label>
               <div class="col-sm-4">
                 <select id="condomino" name="condomino" class="form-control">
-                  <!--<option selected>Escolher...</option>-->
+                  <option selected value=<?php echo $row['idCondomino'];?>><?php echo $row['name'];?></option>
                 </select>
               </div>
             </div>
@@ -174,7 +197,7 @@ if (!isset($_SESSION['id'])){
               <label for="status" class="col-sm-2 col-form-label">Status</label>
               <div class="col-sm-4">
                 <select id="status" name="status" class="form-control">
-                  <!--<option selected>Escolher...</option>-->
+                  <option selected value=<?php echo $row['idStatus'];?>><?php echo $row['status'];?></option>-->
                   <option value=1>Pago</option>
                   <option value=2>Não Pago</option>
                 </select>
@@ -184,8 +207,11 @@ if (!isset($_SESSION['id'])){
               <div class="col-sm-2">Opção</div>
               <div class="col-sm-10">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="gridCheck1" name="hasInstallments"
-                    onclick="habilitar()">
+                  <input class="form-check-input" type="checkbox" id="gridCheck1" name="hasInstallments" <?php
+                    if($row['hasInstallments'] == 1){
+                      echo 'checked';
+                    }
+                  ?> onclick="habilitar()">
                   <label class="form-check-label" for="gridCheck1">
                     Parcela
                   </label>
@@ -195,8 +221,11 @@ if (!isset($_SESSION['id'])){
             <div class="form-group row">
               <label for="qtdInstallments" class="col-sm-2 col-form-label">Quantidade parcela</label>
               <div class="col-sm-6">
-                <input type="text" class="form-control" id="qtdInstallments" name="qtdInstallments" placeholder="2"
-                  disabled>
+                <input type="text" class="form-control" id="qtdInstallments" name="qtdInstallments" value=<?php echo $row['qtdInstallments'];
+                  if($row['hasInstallments'] != 1){
+                    echo 'disabled';
+                  };
+                ?>>
               </div>
             </div>
             <div class="form-group row">
@@ -204,8 +233,11 @@ if (!isset($_SESSION['id'])){
               <div class="col-sm-4">
                 <div class="input-group mb-3">
                   <span class="input-group-text">R$</span>
-                  <input type="text" class="form-control money" id="valueInstallments" name="valueInstallments"
-                    placeholder="500,00" disabled>
+                  <input type="text" class="form-control money" id="valueInstallments" name="valueInstallments" value=<?php echo $row['valueInstallments'];
+                    if($row['hasInstallments'] != 1){
+                      echo 'disabled';
+                    };
+                  ?>>
                 </div>
               </div>
             </div>
@@ -221,7 +253,7 @@ if (!isset($_SESSION['id'])){
             </div>-->
             <div class="form-group row">
               <div class="col-sm-10">
-                <button type="submit" id="submitButton" class="btn btn-primary">Criar</button>
+                <button type="submit" id="submitButton" class="btn btn-primary">Alterar</button>
               </div>
             </div>
           </form>
